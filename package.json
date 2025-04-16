@@ -16,6 +16,7 @@
     "viem": "^2.26.5"
   },
   "dependencies": {
-    "indicatorts": "^2.2.2"
+    "indicatorts": "^2.2.2",
+    "simple-logger": "github:baxelson12/simple-logger"
   }
 }

@@ -1,41 +1,58 @@
 import { tap, type MonoTypeOperatorFunction } from "rxjs";
+import { logger } from "simple-logger";
 
-/**
- * Generates a short, simple random alphanumeric ID.
- * Collision chance is very low for typical debugging scenarios.
- * @param length The desired length of the random part (default: 6)
- */
-function generateSimpleRandomId(length = 6): string {
-  return Math.random()
-    .toString(36)
-    .substring(2, 2 + length);
-}
+// Shared state: A record to store active subscription counts per observable name.
+const activeSubscriptionCounts: Record<string, number> = {};
 
 /**
  * Returns a tap operator that logs the lifecycle of an Observable subscription,
- * using a unique random ID generated for each specific subscription instance.
+ * maintaining and displaying the count of currently active subscriptions for that name.
  * @param observableName A descriptive name for the observable source.
  */
-export function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
-  // Generate the unique ID *once* when logLifecycle is called for this spot in the pipe.
-  // This ID will be unique to this specific subscription instance.
-  const instanceId = generateSimpleRandomId(8); // e.g., 'a3f8kdeux', 'k9m3p1z0'
-
+export function logLifecycleWithActiveCount<T>(
+  observableName: string,
+): MonoTypeOperatorFunction<T> {
+  const log = logger({
+    namespace: "HL-RxJS",
+    logLevel: (process.env.LOG_LEVEL as any) ?? "DEBUG",
+    showTimestamp: process.env.DEV === "true",
+  });
   return tap<T>({
-    // --- Callbacks using the SAME instanceId ---
     subscribe: () => {
-      // Logged when the actual subscription occurs
-      console.log(`[${observableName}-${instanceId}]::Subscribed`);
+      // Increment count for this observableName *before* logging
+      activeSubscriptionCounts[observableName] =
+        (activeSubscriptionCounts[observableName] || 0) + 1;
+      const currentCount = activeSubscriptionCounts[observableName];
+      // Log the count *after* incrementing
+      log.debug(`::${observableName}-${currentCount}:: Subscribed`);
     },
     error: (err) => {
-      console.error(`[${observableName}-${instanceId}]::Errored`, err);
+      // Log the error. The count at this moment might be useful context.
+      // The actual decrement happens in finalize.
+      const currentCount = activeSubscriptionCounts[observableName] || 0;
+      log.error(`::${observableName}-${currentCount}:: Errored: `, err);
     },
     complete: () => {
-      console.log(`[${observableName}-${instanceId}]::Completed`);
+      // Log completion. The count at this moment might be useful context.
+      // The actual decrement happens in finalize.
+      const currentCount = activeSubscriptionCounts[observableName] || 0;
+      log.debug(`::${observableName}-${currentCount}:: Completed`);
     },
     finalize: () => {
-      // Logged when subscription ends (complete, error, or unsubscribe)
-      console.log(`[${observableName}-${instanceId}]::Finalized`);
+      // Finalize runs *after* error or complete, or on unsubscribe.
+      // Log the count *before* decrementing to show the count when it ended.
+      const countBeforeDecrement = activeSubscriptionCounts[observableName] || 0;
+      log.debug(`::${observableName}-${countBeforeDecrement}:: Finalized`);
+
+      // Decrement the count safely (ensuring it doesn't go below 0)
+      activeSubscriptionCounts[observableName] = Math.max(
+        0,
+        (activeSubscriptionCounts[observableName] || 0) - 1,
+      );
+
+      if (activeSubscriptionCounts[observableName] === 0) {
+        delete activeSubscriptionCounts[observableName];
+      }
     },
   });
 }
