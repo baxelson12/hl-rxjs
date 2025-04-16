@@ -12,7 +12,7 @@ export interface OrderDetails {
 export const createMarketOpen =
   (socketWalletClient: WalletClient<WebSocketTransport>) =>
   (orderMidPrice: Observable<number>, orderOrderFills: Observable<WsUserFills>) =>
-  ({ assetId, isBuy, size }: OrderDetails) =>
+  ({ assetId, isBuy, size }: Omit<OrderDetails, "price">) =>
     orderMidPrice.pipe(
       first(),
       switchMap((price) =>
