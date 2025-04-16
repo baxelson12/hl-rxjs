@@ -1,6 +1,7 @@
 import type { Candle } from "@nktkas/hyperliquid";
 import { vwap } from "indicatorts";
 import { filter, map, type Observable } from "rxjs";
+import { logLifecycle } from "../../utils/log-lifecycle";
 
 type VwapAnchor = "session" | "week" | "month" | "year";
 
@@ -45,6 +46,7 @@ const getFilterStartTime = (anchor: VwapAnchor) => {
 
 export const createVwap = (candleSnapshot$: Observable<Candle[]>) => (anchor: VwapAnchor) => {
   const vwapSnapshot = candleSnapshot$.pipe(
+    logLifecycle("vwapSnapshot"),
     map((arr) =>
       anchor === "session" ? arr : arr.filter(({ T }) => T >= getFilterStartTime(anchor)),
     ),
@@ -64,6 +66,7 @@ export const createVwap = (candleSnapshot$: Observable<Candle[]>) => (anchor: Vw
   return {
     vwapSnapshot$: vwapSnapshot,
     vwapCurrent$: vwapSnapshot.pipe(
+      logLifecycle("vwapCurrent"),
       map((arr) => arr.at(-1)),
       filter((v): v is number => !!v),
     ),

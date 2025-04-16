@@ -17,6 +17,7 @@ import {
   Subject,
   takeUntil,
 } from "rxjs";
+import { logLifecycle } from "../utils/log-lifecycle";
 
 export const createCandles =
   (
@@ -29,9 +30,10 @@ export const createCandles =
     // Exported data
     const candleCurrent = new Observable<Candle>((subscriber) => {
       const client = socketEventClient.candle({ coin, interval }, (data) => subscriber.next(data));
-    }).pipe(shareReplay(1));
+    }).pipe(logLifecycle("candleCurrent"), shareReplay(1));
     const candleSnapshot = new BehaviorSubject<Candle[]>([]);
     const candleClosed = candleCurrent.pipe(
+      logLifecycle("candleClosed"),
       pairwise(),
       filter(([prev, curr]) => prev.T !== curr.T),
       map(([prev]) => prev),
@@ -74,7 +76,7 @@ export const createCandles =
 
     return {
       candleCurrent$: candleCurrent,
-      candleSnapshot$: candleSnapshot.asObservable(),
+      candleSnapshot$: candleSnapshot.pipe(logLifecycle("candleSnapshot")),
       candleClosed$: candleClosed,
       // Cleanup
       dispose: () => _dispose.next(),

@@ -5,6 +5,7 @@ import {
   type WebSocketTransport,
 } from "@nktkas/hyperliquid";
 import { distinctUntilChanged, map, Observable, shareReplay } from "rxjs";
+import { logLifecycle } from "../utils/log-lifecycle";
 
 export const createAccount =
   (socketEventClient: EventClient<WebSocketTransport>) => (conf: EventWebData2Parameters) => {
@@ -13,8 +14,9 @@ export const createAccount =
     // Exported data
     const accountData = new Observable<WsWebData2>((subscriber) => {
       const client = socketEventClient.webData2(conf, (data) => subscriber.next(data));
-    }).pipe(shareReplay(1));
+    }).pipe(logLifecycle("accountData"), shareReplay(1));
     const accountUser = accountData.pipe(
+      logLifecycle("accountUser"),
       map(({ user }) => user),
       distinctUntilChanged(),
       shareReplay(1),

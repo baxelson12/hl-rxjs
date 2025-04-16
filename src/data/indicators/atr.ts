@@ -1,9 +1,11 @@
 import type { Candle } from "@nktkas/hyperliquid";
 import { atr } from "indicatorts";
 import { filter, map, type Observable } from "rxjs";
+import { logLifecycle } from "../../utils/log-lifecycle";
 
 export const createAtr = (candleSnapshot$: Observable<Candle[]>) => (period: number) => {
   const atrSnapshot = candleSnapshot$.pipe(
+    logLifecycle("atrSnapshot"),
     map((arr) =>
       arr.reduce(
         (acc, curr) => ({
@@ -21,6 +23,7 @@ export const createAtr = (candleSnapshot$: Observable<Candle[]>) => (period: num
   return {
     atrSnapshot$: atrSnapshot,
     atrCurrent$: atrSnapshot.pipe(
+      logLifecycle("atrCurrent"),
       map((arr) => arr.at(-1)),
       filter((v): v is number => !!v),
     ),
