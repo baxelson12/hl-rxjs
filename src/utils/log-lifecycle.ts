@@ -16,7 +16,7 @@ function generateSimpleRandomId(length = 6): string {
  * using a unique random ID generated for each specific subscription instance.
  * @param observableName A descriptive name for the observable source.
  */
-function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
+export function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
   // Generate the unique ID *once* when logLifecycle is called for this spot in the pipe.
   // This ID will be unique to this specific subscription instance.
   const instanceId = generateSimpleRandomId(8); // e.g., 'a3f8kdeux', 'k9m3p1z0'
