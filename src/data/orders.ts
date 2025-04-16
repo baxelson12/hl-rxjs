@@ -19,20 +19,20 @@ export const createOrder =
           }),
       ),
       filter(({ isSnapshot }) => !isSnapshot),
-      shareReplay(1),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
     const orderOrders = accountData.pipe(
       logLifecycle("orderOrders"),
       map(({ openOrders }) => openOrders),
       distinctUntilChanged((prev, curr) => prev.length === curr.length),
-      shareReplay(1),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
     const orderMidPrice = accountData.pipe(
       logLifecycle("orderMidPrice"),
       map(({ assetCtxs }) => assetCtxs[1]?.midPx && +assetCtxs[1].midPx),
       filter((v): v is number => !!v),
       distinctUntilChanged(),
-      shareReplay(1),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     return {

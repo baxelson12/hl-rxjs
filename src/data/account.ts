@@ -14,12 +14,12 @@ export const createAccount =
     // Exported data
     const accountData = new Observable<WsWebData2>((subscriber) => {
       const client = socketEventClient.webData2(conf, (data) => subscriber.next(data));
-    }).pipe(logLifecycle("accountData"), shareReplay(1));
+    }).pipe(logLifecycle("accountData"), shareReplay({ bufferSize: 1, refCount: true }));
     const accountUser = accountData.pipe(
       logLifecycle("accountUser"),
       map(({ user }) => user),
       distinctUntilChanged(),
-      shareReplay(1),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     return {
