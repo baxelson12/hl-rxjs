@@ -1,30 +1,41 @@
 import { tap, type MonoTypeOperatorFunction } from "rxjs";
 
-let simpleIdCounter = 0;
-
-function generateSequentialId(prefix = "ID"): string {
-  simpleIdCounter++;
-  return `${prefix}-${simpleIdCounter}`;
+/**
+ * Generates a short, simple random alphanumeric ID.
+ * Collision chance is very low for typical debugging scenarios.
+ * @param length The desired length of the random part (default: 6)
+ */
+function generateSimpleRandomId(length = 6): string {
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
 }
 
 /**
- * Returns a tap operator that logs the lifecycle of an Observable subscription.
+ * Returns a tap operator that logs the lifecycle of an Observable subscription,
+ * using a unique random ID generated for each specific subscription instance.
  * @param observableName A descriptive name for the observable source.
  */
-export function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
-  const subId = generateSequentialId(observableName);
+function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
+  // Generate the unique ID *once* when logLifecycle is called for this spot in the pipe.
+  // This ID will be unique to this specific subscription instance.
+  const instanceId = generateSimpleRandomId(8); // e.g., 'a3f8kdeux', 'k9m3p1z0'
 
-  // tap<T> correctly infers the type T from the source observable
-  // when used inside pipe(). Explicitly returning MonoTypeOperatorFunction<T>
-  // ensures the function signature is correct for TypeScript inference.
   return tap<T>({
-    // You can explicitly type tap<T>(...) for clarity if needed
-    subscribe: () => console.log(`[Sub START ${subId}] // ${observableName}`),
-    // Optional: Log next value if needed (be careful with large objects)
-    // next: (value) => console.log(`[Sub NEXT ${subId}] Value:`, value),
-    error: (err) => console.error(`[Sub ERROR ${subId}] // ${observableName}`, err),
-    complete: () => console.log(`[Sub COMPLETE ${subId}] // ${observableName}`),
-    // Finalize is called for complete, error, OR unsubscribe
-    finalize: () => console.log(`[Sub FINALIZE ${subId}] // ${observableName}`),
+    // --- Callbacks using the SAME instanceId ---
+    subscribe: () => {
+      // Logged when the actual subscription occurs
+      console.log(`[${observableName}-${instanceId}]::Subscribed`);
+    },
+    error: (err) => {
+      console.error(`[${observableName}-${instanceId}]::Errored`, err);
+    },
+    complete: () => {
+      console.log(`[${observableName}-${instanceId}]::Completed`);
+    },
+    finalize: () => {
+      // Logged when subscription ends (complete, error, or unsubscribe)
+      console.log(`[${observableName}-${instanceId}]::Finalized`);
+    },
   });
 }
