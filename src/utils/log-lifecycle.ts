@@ -9,9 +9,7 @@ const activeSubscriptionCounts: Record<string, number> = {};
  * maintaining and displaying the count of currently active subscriptions for that name.
  * @param observableName A descriptive name for the observable source.
  */
-export function logLifecycleWithActiveCount<T>(
-  observableName: string,
-): MonoTypeOperatorFunction<T> {
+export function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
   const log = logger({
     namespace: "HL-RxJS",
     logLevel: (process.env.LOG_LEVEL as any) ?? "DEBUG",
