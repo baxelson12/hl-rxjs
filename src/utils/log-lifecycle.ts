@@ -12,7 +12,7 @@ const activeSubscriptionCounts: Record<string, number> = {};
 export function logLifecycle<T>(observableName: string): MonoTypeOperatorFunction<T> {
   const log = logger({
     namespace: "HL-RxJS",
-    logLevel: (process.env.LOG_LEVEL as any) ?? "DEBUG",
+    logLevel: (process.env.LOG_LEVEL as any) ?? "INFO",
     showTimestamp: process.env.DEV === "true",
   });
   return tap<T>({
