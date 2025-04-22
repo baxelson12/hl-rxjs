@@ -6,14 +6,13 @@ export interface OrderDetails {
   assetId: number;
   isBuy: boolean;
   size: number;
-  cloid: `0x${string}`;
   price?: number;
 }
 
 export const createMarketOpen =
   (socketWalletClient: WalletClient<WebSocketTransport>) =>
   (orderMidPrice: Observable<number>, orderOrderFills: Observable<WsUserFills>) =>
-  ({ cloid, assetId, isBuy, size }: Omit<OrderDetails, "price">) =>
+  ({ assetId, isBuy, size }: Omit<OrderDetails, "price">) =>
     orderMidPrice.pipe(
       first(),
       switchMap((price) =>
@@ -23,12 +22,10 @@ export const createMarketOpen =
               {
                 a: assetId,
                 b: isBuy,
-                // Move by a tenth from mid to ensure order fills
-                p: round(price + (isBuy ? 0.1 : -0.1), 1).toString(),
+                p: round(price, 1).toString(),
                 s: round(size, 4).toString(),
                 r: false,
                 t: { limit: { tif: "Gtc" } },
-                c: cloid,
               },
             ],
             grouping: "na",
