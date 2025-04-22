@@ -22,7 +22,8 @@ export const createMarketOpen =
               {
                 a: assetId,
                 b: isBuy,
-                p: round(price, 1).toString(),
+                // Offset mid by a tenth to ensure position fills
+                p: round(price + (isBuy ? 0.1 : -0.1), 1).toString(),
                 s: round(size, 4).toString(),
                 r: false,
                 t: { limit: { tif: "Gtc" } },
