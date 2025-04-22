@@ -5,7 +5,7 @@ import { round } from "../utils/round";
 
 export const createStoploss =
   (socketWalletClient: WalletClient<WebSocketTransport>) =>
-  ({ assetId, isBuy, size, price }: OrderDetails) => {
+  ({ assetId, isBuy, size, price }: Omit<OrderDetails, "cloid">) => {
     if (!price) {
       throw new Error(`Attempted to create stoploss with an undefined price.`);
     }
