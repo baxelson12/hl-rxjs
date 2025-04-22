@@ -13,7 +13,7 @@ import {
   map,
   Observable,
   pairwise,
-  shareReplay,
+  share,
   Subject,
   takeUntil,
 } from "rxjs";
@@ -30,14 +30,13 @@ export const createCandles =
     // Exported data
     const candleCurrent = new Observable<Candle>((subscriber) => {
       const client = socketEventClient.candle({ coin, interval }, (data) => subscriber.next(data));
-    }).pipe(logLifecycle("candleCurrent"), shareReplay({ bufferSize: 1, refCount: true }));
+    }).pipe(logLifecycle("candleCurrent"), share({ resetOnRefCountZero: true }));
     const candleSnapshot = new BehaviorSubject<Candle[]>([]);
     const candleClosed = candleCurrent.pipe(
       logLifecycle("candleClosed"),
       pairwise(),
       filter(([prev, curr]) => prev.T !== curr.T),
       map(([prev]) => prev),
-      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     // Load initial dataset

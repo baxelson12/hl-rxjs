@@ -4,7 +4,7 @@ import {
   type EventWebData2Parameters,
   type WebSocketTransport,
 } from "@nktkas/hyperliquid";
-import { distinctUntilChanged, map, Observable, shareReplay } from "rxjs";
+import { distinctUntilChanged, map, Observable, share } from "rxjs";
 import { logLifecycle } from "../utils/log-lifecycle";
 
 export const createAccount =
@@ -14,12 +14,11 @@ export const createAccount =
     // Exported data
     const accountData = new Observable<WsWebData2>((subscriber) => {
       const client = socketEventClient.webData2(conf, (data) => subscriber.next(data));
-    }).pipe(logLifecycle("accountData"), shareReplay({ bufferSize: 1, refCount: true }));
+    }).pipe(logLifecycle("accountData"), share({ resetOnRefCountZero: true }));
     const accountUser = accountData.pipe(
       logLifecycle("accountUser"),
       map(({ user }) => user),
       distinctUntilChanged(),
-      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     return {

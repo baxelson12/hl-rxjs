@@ -4,7 +4,7 @@ import {
   type WebSocketTransport,
   type WsWebData2,
 } from "@nktkas/hyperliquid";
-import { distinctUntilChanged, filter, map, Observable, shareReplay, switchMap } from "rxjs";
+import { distinctUntilChanged, filter, map, Observable, share, switchMap } from "rxjs";
 import { logLifecycle } from "../utils/log-lifecycle";
 
 export const createOrder =
@@ -19,20 +19,18 @@ export const createOrder =
           }),
       ),
       filter(({ isSnapshot }) => !isSnapshot),
-      shareReplay({ bufferSize: 1, refCount: true }),
+      share({ resetOnRefCountZero: true }),
     );
     const orderOrders = accountData.pipe(
       logLifecycle("orderOrders"),
       map(({ openOrders }) => openOrders),
       distinctUntilChanged((prev, curr) => prev.length === curr.length),
-      shareReplay({ bufferSize: 1, refCount: true }),
     );
     const orderMidPrice = accountData.pipe(
       logLifecycle("orderMidPrice"),
       map(({ assetCtxs }) => assetCtxs[1]?.midPx && +assetCtxs[1].midPx),
       filter((v): v is number => !!v),
       distinctUntilChanged(),
-      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     return {
