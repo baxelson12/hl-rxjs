@@ -20,6 +20,7 @@ import { createEma } from "./data/indicators/ema";
 import { createRsi } from "./data/indicators/rsi";
 import { createVwap } from "./data/indicators/vwap";
 import { createTakeprofit } from "./actions/create-takeprofit";
+import { createDema } from "./data/indicators/dema";
 
 interface HyperliquidRxjsConfig {
   wallet: PrivateKeyAccount;
@@ -89,6 +90,7 @@ export class HyperliquidRxjs {
       ema: createEma(this.candleData.candleSnapshot$),
       rsi: createRsi(this.candleData.candleSnapshot$),
       vwap: createVwap(this.candleData.candleSnapshot$),
+      dema: createDema(this.candleData.candleSnapshot$),
     };
   }
 }
