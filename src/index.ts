@@ -19,6 +19,7 @@ import { createAtr } from "./data/indicators/atr";
 import { createEma } from "./data/indicators/ema";
 import { createRsi } from "./data/indicators/rsi";
 import { createVwap } from "./data/indicators/vwap";
+import { createTakeprofit } from "./actions/create-takeprofit";
 
 interface HyperliquidRxjsConfig {
   wallet: PrivateKeyAccount;
@@ -80,6 +81,7 @@ export class HyperliquidRxjs {
       ),
       createMarketStop$: createStoploss(this.socketWalletClient),
       cancelOrder$: createCancelOrder(this.socketWalletClient),
+      createTakeprofit$: createTakeprofit(this.socketWalletClient),
     };
 
     this.indicators = {
