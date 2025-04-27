@@ -20,7 +20,7 @@ export const createTakeprofit =
             s: round(size, 4).toString(),
             r: true,
             t: {
-              trigger: { isMarket: true, triggerPx: round(price, 1).toString(), tpsl: "sl" },
+              trigger: { isMarket: true, triggerPx: round(price, 1).toString(), tpsl: "tp" },
             },
           },
         ],
